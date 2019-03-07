@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package userservice;
+
+service UserService {
+    rpc getUserBy (Phone) returns (User) {}
+    rpc getKnownRegisteredUsersBy (Phones) returns (Users) {}
+}
+
+message Empty {}
+
+message Phone {
+    string data = 1;
+    string token = 2;
+}
+
+message User {
+    string id = 1;
+    string name = 2;
+    Phone phone = 3;
+}
+
+message Users {
+    repeated User users = 1;
+}
+
+message Phones {
+    repeated Phone phones = 1;
+    string token = 2;
+}

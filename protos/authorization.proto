@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package authorizationservice;
+
+service AuthorizationService {
+    rpc Authorize (FirebaseToken) returns (Result) {}
+}
+
+message Empty {}
+
+message FirebaseToken {
+    string data = 1;
+}
+
+message Result {
+    string data = 1;
+    MessangerToken token = 2;
+}
+
+message MessangerToken {
+    string data = 1;
+}

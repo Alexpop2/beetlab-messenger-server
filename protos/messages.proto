@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package messageservice;
+
+service MessageService {
+    rpc Send (Message) returns (Empty) {}
+    rpc PerformMessageStream (stream MessageStreamRequest) returns (stream Message) {}
+    rpc VerifyGet (Message) returns (Empty) {}
+}
+
+message Empty {}
+
+message Message {
+    string id = 1;
+    string text = 2;
+    string receiverId = 3;
+    string token = 4;
+    string date = 5;
+    MessageState state = 6;
+    string senderId = 7;
+}
+
+enum MessageState {
+    queued = 0;
+    sending = 1;
+    delivered = 2;
+    failed = 3;
+}
+
+message MessageStreamRequest {
+    string login = 1;
+    string token = 2;
+}
