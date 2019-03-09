@@ -160,7 +160,7 @@ class Messages {
             }
         });
         call.on('end', function() {
-            connectedUsers = connectedUsers.filter((n) => n.login !== login && n.token !== token);
+            connectedUsers = connectedUsers.filter((n) => n.login !== login || n.token !== token);
             console.log(`User Disconnected - ${login}`);
             call.end();
         });
