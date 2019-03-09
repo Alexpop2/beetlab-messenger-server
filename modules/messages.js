@@ -122,6 +122,7 @@ class Messages {
 
     performMessageStream(call) {
         var login = "";
+        var token = "";
         call.on('data', function(streamRequest) {
             var message = {};
             let user = global.users.users.find((n) => n.login === streamRequest.login && n.token === streamRequest.token);
@@ -135,6 +136,7 @@ class Messages {
                     connectedUsers.push({login: user.login, token: user.token, cback: call});
                     console.log(`User Connected - ${user.login}`);
                     login = user.login;
+                    token = user.token;
                     message = {};
                     message.id = "-1";
                     message.text = "Connected";
@@ -158,7 +160,7 @@ class Messages {
             }
         });
         call.on('end', function() {
-            connectedUsers = connectedUsers.filter((n) => n.login !== login);
+            connectedUsers = connectedUsers.filter((n) => n.login !== login && n.token !== token);
             console.log(`User Disconnected - ${login}`);
             call.end();
         });
