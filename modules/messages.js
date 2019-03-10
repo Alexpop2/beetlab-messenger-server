@@ -12,14 +12,14 @@ let connectedUsers = [];
 
 // MARK: - Realising message from queue after user connected (receiver)
 
-function sendQueuedMessages(call, streamRequest) {
-    var messages = queueMessages.filter((n) => n.receiverId === streamRequest.login);
+function sendQueuedMessages(call, user) {
+    var messages = queueMessages.filter((n) => n.receiver.id === user.id);
     messages = messages.sort((a,b) => a.date - b.date );
     messages.forEach((message) => {
         call.write(message);
         queueMessages = queueMessages.filter((n) => n.id !== message.id);
 
-        let senderUser = connectedUsers.find((n) => n.login === message.senderId);
+        let senderUser = connectedUsers.find((n) => n.id === message.sender.id);
         if(senderUser) {
             senderUser.cback.write(message);
             verifieingMessages.push(message);
@@ -31,8 +31,8 @@ function sendQueuedMessages(call, streamRequest) {
 
 // MARK: - Realising message from queue after user connected (sender)
 
-function sendCallbackQueuedMessages(call, streamRequest) {
-    var messages = callbackQueueMessages.filter((n) => n.senderId === streamRequest.login);
+function sendCallbackQueuedMessages(call, user) {
+    var messages = callbackQueueMessages.filter((n) => n.sender.id === user.id);
     messages = messages.sort((a,b) => a.date - b.date );
     messages.forEach((message) => {
         call.write(message);
@@ -69,21 +69,21 @@ class Messages {
     // MARK: - Sending message
 
     send(call, callback) {
-        let connectedUser = connectedUsers.find((n) => n.login === call.request.senderId && n.token === call.request.token);
+        let connectedUser = connectedUsers.find((n) => n.id === call.request.sender.id && n.token === call.request.token);
         if(connectedUser) {
-            let registeredUser = global.users.users.find((n) => n.login === call.request.receiverId);
+            let registeredUser = global.users.users.find((n) => n.id === call.request.receiver.id);
             if(registeredUser) {
                 callback(null, {});
-                let receiverUser = connectedUsers.find((n) => n.login === call.request.receiverId);
+                let receiverUser = connectedUsers.find((n) => n.id === call.request.receiver.id);
                 if (receiverUser) {
                     var messageSending = {
                         id: uuidv1(),
                         text: call.request.text,
-                        receiverId: call.request.receiverId,
+                        receiver: call.request.receiver,
                         token: "",
-                        date: Date.now().toString(),
+                        date: Date.now(),
                         state: 1,
-                        senderId: call.request.senderId
+                        sender: call.request.sender
                     };
                     if (receiverUser.cback) {
                         receiverUser.cback.write(messageSending);
@@ -94,11 +94,11 @@ class Messages {
                     var messageQueued = {
                         id: uuidv1(),
                         text: call.request.text,
-                        receiverId: call.request.receiverId,
+                        receiver: call.request.receiver,
                         token: "",
-                        date: Date.now().toString(),
+                        date: Date.now(),
                         state: 0,
-                        senderId: call.request.senderId
+                        sender: call.request.sender
                     };
                     connectedUser.cback.write(messageQueued);
                     messageQueued.state = 1;
@@ -133,8 +133,8 @@ class Messages {
                     connectedUsers = connectedUsers.filter((n) => n.login !== streamRequest.login)
                 }
                 if (user.token === streamRequest.token) {
-                    connectedUsers.push({login: user.login, token: user.token, cback: call});
-                    console.log(`User Connected - ${user.login}`);
+                    connectedUsers.push({id: user.id, login: user.login, token: user.token, cback: call});
+                    console.log(`User Connected: ${user.login} - ${user.id}`);
                     login = user.login;
                     token = user.token;
                     message = {};
@@ -142,8 +142,8 @@ class Messages {
                     message.text = "Connected";
                     message.token = streamRequest.token;
                     call.write(message);
-                    sendQueuedMessages(call, streamRequest);
-                    sendCallbackQueuedMessages(call, streamRequest);
+                    sendQueuedMessages(call, user);
+                    sendCallbackQueuedMessages(call, user);
                 } else {
                     message = {};
                     message.id = "-1";
@@ -173,7 +173,7 @@ class Messages {
         if(verifyMessage) {
             callback(null, {});
             verifyMessage.state = 2;
-            let receiverUser = connectedUsers.find((n) => n.login === call.request.senderId);
+            let receiverUser = connectedUsers.find((n) => n.id === call.request.sender.id);
             if(receiverUser) {
                 if(receiverUser.cback) {
                     receiverUser.cback.write(verifyMessage);
