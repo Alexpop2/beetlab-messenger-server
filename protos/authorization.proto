@@ -15,6 +15,7 @@ message FirebaseToken {
 message Result {
     string data = 1;
     MessangerToken token = 2;
+    string userId = 3;
 }
 
 message MessangerToken {

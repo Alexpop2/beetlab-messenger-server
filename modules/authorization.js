@@ -1,6 +1,7 @@
 // MARK: - Require modules
 
 const grpc = require('grpc');
+const uuidv1 = require('uuid/v1');
 const fs = require('fs');
 const admin = require("firebase-admin");
 const serviceAccount = require("../keys/beetlab-messages-firebase-adminsdk-msyfm-9f3b615df3.json");
@@ -50,18 +51,21 @@ class Authorization {
                     .then(function(userRecord) {
                         require('crypto').randomBytes(48, function (err, buffer) {
                             var code = buffer.toString('hex');
+                            var userId = "";
                             var userData = userRecord.toJSON();
                             var users = JSON.parse(fs.readFileSync('data/users.json', 'utf8'));
                             let user = users.users.find((n) => n.login === userData.phoneNumber);
                             if(user) {
-                                user.token = code
+                                user.token = code;
+                                userId = user.id;
                             } else {
-                                users.users.push({ login: userData.phoneNumber, token: code });
+                                userId = uuidv1();
+                                users.users.push({ id: userId, login: userData.phoneNumber, token: code });
                             }
                             var jsonUsers = JSON.stringify(users);
                             fs.writeFileSync("data/users.json", jsonUsers, 'utf8');
                             global.users = users;
-                            var result = { data: "Successful", token: { data: code } };
+                            var result = { data: "Successful", token: { data: code }, userId: userId };
                             callback(null, result);
                         });
                     })
