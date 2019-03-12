@@ -14,10 +14,10 @@ message FirebaseToken {
 
 message Result {
     string data = 1;
-    MessangerToken token = 2;
+    FirebaseCustomToken token = 2;
     string userId = 3;
 }
 
-message MessangerToken {
+message FirebaseCustomToken {
     string data = 1;
 }

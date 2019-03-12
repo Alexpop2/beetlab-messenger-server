@@ -3,8 +3,11 @@ syntax = "proto3";
 package userservice;
 
 service UserService {
-    rpc getUserBy (Phone) returns (User) {}
-    rpc getKnownRegisteredUsersBy (Phones) returns (Users) {}
+    rpc getUserByPhone (Phone) returns (User) {}
+    rpc getUserByName (Name) returns (User) {}
+    rpc getUserByID (ID) returns (User) {}
+    rpc getKnownRegisteredUsersByPhones (Phones) returns (Users) {}
+    rpc setUserName (Name) returns (Empty) {}
 }
 
 message Empty {}
@@ -14,10 +17,20 @@ message Phone {
     string token = 2;
 }
 
+message Name {
+    string data = 1;
+    string token = 2;
+}
+
+message ID {
+    string data = 1;
+    string token = 2;
+}
+
 message User {
     string id = 1;
     string name = 2;
-    Phone phone = 3;
+    string phone = 3;
 }
 
 message Users {
@@ -25,6 +38,6 @@ message Users {
 }
 
 message Phones {
-    repeated Phone phones = 1;
+    repeated string phones = 1;
     string token = 2;
 }
