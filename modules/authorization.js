@@ -44,30 +44,33 @@ class Authorization {
     // MARK: - Authorizing
 
     authorize(call, callback) {
-
         admin.auth().verifyIdToken(call.request.data)
             .then(function(decodedToken) {
                 admin.auth().getUser(decodedToken.uid)
                     .then(function(userRecord) {
-                        require('crypto').randomBytes(48, function (err, buffer) {
-                            var code = buffer.toString('hex');
-                            var userId = "";
-                            var userData = userRecord.toJSON();
-                            var users = JSON.parse(fs.readFileSync('data/users.json', 'utf8'));
-                            let user = users.users.find((n) => n.login === userData.phoneNumber);
-                            if(user) {
-                                user.token = code;
-                                userId = user.id;
-                            } else {
-                                userId = uuidv1();
-                                users.users.push({ id: userId, login: userData.phoneNumber, token: code });
-                            }
-                            var jsonUsers = JSON.stringify(users);
-                            fs.writeFileSync("data/users.json", jsonUsers, 'utf8');
-                            global.users = users;
-                            var result = { data: "Successful", token: { data: code }, userId: userId };
-                            callback(null, result);
-                        });
+                        admin.auth().createCustomToken(decodedToken.uid)
+                            .then(function(customToken) {
+                                var userId = "";
+                                var userData = userRecord.toJSON();
+                                var users = JSON.parse(fs.readFileSync('data/users.json', 'utf8'));
+                                let user = users.users.find((n) => n.login === userData.phoneNumber);
+                                if(user) {
+                                    user.token = call.request.data;
+                                    userId = user.id;
+                                } else {
+                                    userId = uuidv1();
+                                    users.users.push({ id: userId, login: userData.phoneNumber, token: call.request.data });
+                                }
+                                var jsonUsers = JSON.stringify(users);
+                                fs.writeFileSync("data/users.json", jsonUsers, 'utf8');
+                                global.users = users;
+                                var result = { data: "Successful", token: { data: customToken }, userId: userId };
+                                callback(null, result);
+                            })
+                            .catch(function(error) {
+                                var result = { data: error };
+                                callback(null, result);
+                            });
                     })
                     .catch(function(error) {
                         var result = { data: error };
