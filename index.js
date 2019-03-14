@@ -19,9 +19,9 @@ const users = new Users(server, protoLoader);
 
 // MARK: - Starting server
 
-let credentials = grpc.ServerCredentials.createSsl(fs.readFileSync('./keys/ca.crt'), [{
-    cert_chain: fs.readFileSync('./keys/server.crt'),
-    private_key: fs.readFileSync('./keys/server.key')
+let credentials = grpc.ServerCredentials.createSsl(fs.readFileSync('keys/ca.crt'), [{
+    cert_chain: fs.readFileSync('keys/server.crt'),
+    private_key: fs.readFileSync('keys/server.key')
 }], true);
 
 server.bind('0.0.0.0:50051', credentials);
