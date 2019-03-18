@@ -27,6 +27,7 @@ message Message {
     int32 date = 5;
     MessageState state = 6;
     Sender sender = 7;
+    int32 code = 8;
 }
 
 enum MessageState {

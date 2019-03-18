@@ -83,7 +83,8 @@ class Messages {
                         token: "",
                         date: Date.now(),
                         state: 1,
-                        sender: call.request.sender
+                        sender: call.request.sender,
+                        code: 1000
                     };
                     if (receiverUser.cback) {
                         receiverUser.cback.write(messageSending);
@@ -98,7 +99,8 @@ class Messages {
                         token: "",
                         date: Date.now(),
                         state: 0,
-                        sender: call.request.sender
+                        sender: call.request.sender,
+                        code: 1000
                     };
                     connectedUser.cback.write(messageQueued);
                     messageQueued.state = 1;
@@ -139,15 +141,18 @@ class Messages {
                     token = user.token;
                     message = {};
                     message.id = "-1";
+                    message.code = 200;
                     message.text = "Connected";
                     message.token = streamRequest.token;
                     call.write(message);
                     sendQueuedMessages(call, user);
                     sendCallbackQueuedMessages(call, user);
                 } else {
+                    // TODO: Never called. Split it when find user in global users only by login.
                     message = {};
                     message.id = "-1";
                     message.text = "Invalid token";
+                    message.code = 403;
                     call.write(message);
                     call.end();
                 }
@@ -155,6 +160,7 @@ class Messages {
                 message = {};
                 message.id = "-1";
                 message.text = "User not found";
+                message.code = 404;
                 call.write(message);
                 call.end();
             }
@@ -173,6 +179,7 @@ class Messages {
         if(verifyMessage) {
             callback(null, {});
             verifyMessage.state = 2;
+            verifyMessage.code = 1000;
             let receiverUser = global.connectedUsers.find((n) => n.id === call.request.sender.id);
             if(receiverUser) {
                 if(receiverUser.cback) {
