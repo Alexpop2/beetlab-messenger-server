@@ -1,6 +1,6 @@
 {
   "name": "messages-server",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "dependencies": {
     "@grpc/proto-loader": "^0.1.0",
     "async": "^1.5.2",

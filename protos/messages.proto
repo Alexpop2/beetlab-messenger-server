@@ -28,6 +28,7 @@ message Message {
     MessageState state = 6;
     Sender sender = 7;
     int32 code = 8;
+    string phone = 9;
 }
 
 enum MessageState {

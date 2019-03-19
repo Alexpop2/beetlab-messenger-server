@@ -12,19 +12,43 @@ global.connectedUsers = [];
 
 // MARK: - Realising message from queue after user connected (receiver)
 
+// TODO: Сообщения по запросу
+
 function sendQueuedMessages(call, user) {
     var messages = queueMessages.filter((n) => n.receiver.id === user.id);
     messages = messages.sort((a,b) => a.date - b.date );
     messages.forEach((message) => {
-        call.write(message);
+        let messageQueued = {
+            id: message.id,
+            text: message.text,
+            receiver: message.receiver,
+            token: "",
+            date: message.date,
+            state: 1,
+            sender: message.sender,
+            code: 1000,
+            phone: user.login
+        };
+        let messageCallbackQueued = {
+            id: message.id,
+            text: message.text,
+            receiver: message.receiver,
+            token: "",
+            date: message.date,
+            state: 1,
+            sender: message.sender,
+            code: 1000,
+            phone: ""
+        };
+        call.write(messageQueued);
         queueMessages = queueMessages.filter((n) => n.id !== message.id);
-
+        message.phone = "";
         let senderUser = global.connectedUsers.find((n) => n.id === message.sender.id);
         if(senderUser) {
-            senderUser.cback.write(message);
-            verifieingMessages.push(message);
+            senderUser.cback.write(messageCallbackQueued);
+            verifieingMessages.push(messageCallbackQueued);
         } else {
-            callbackQueueMessages.push(message);
+            callbackQueueMessages.push(messageCallbackQueued);
         }
     })
 }
@@ -35,7 +59,19 @@ function sendCallbackQueuedMessages(call, user) {
     var messages = callbackQueueMessages.filter((n) => n.sender.id === user.id);
     messages = messages.sort((a,b) => a.date - b.date );
     messages.forEach((message) => {
-        call.write(message);
+        let verifiedMessage = {
+            id: message.id,
+            text: message.text,
+            receiver: message.receiver,
+            token: "",
+            date: message.date,
+            state: 2,
+            sender: message.sender,
+            code: 1000,
+            phone: ""
+        };
+        call.write(verifiedMessage);
+        //verifieingMessages.push(message);
         callbackQueueMessages = callbackQueueMessages.filter((n) => n.id !== message.id);
     })
 }
@@ -69,40 +105,44 @@ class Messages {
     // MARK: - Sending message
 
     send(call, callback) {
-        let connectedUser = global.connectedUsers.find((n) => n.id === call.request.sender.id && n.token === call.request.token);
+        let connectedUser = global.connectedUsers.find((n) => n.login === call.request.phone && n.token === call.request.token);
         if(connectedUser) {
             let registeredUser = global.users.users.find((n) => n.id === call.request.receiver.id);
             if(registeredUser) {
                 callback(null, {});
                 let receiverUser = global.connectedUsers.find((n) => n.id === call.request.receiver.id);
                 if (receiverUser) {
-                    var messageSending = {
+                    let messageSending = {
                         id: uuidv1(),
                         text: call.request.text,
                         receiver: call.request.receiver,
                         token: "",
                         date: Date.now(),
                         state: 1,
-                        sender: call.request.sender,
-                        code: 1000
+                        sender: { id: connectedUser.id, nickName: connectedUser.name },
+                        code: 1000,
+                        phone: registeredUser.login
                     };
                     if (receiverUser.cback) {
                         receiverUser.cback.write(messageSending);
+                        messageSending.phone = "";
                         connectedUser.cback.write(messageSending);
                         verifieingMessages.push(messageSending);
                     }
                 } else {
-                    var messageQueued = {
+                    let messageQueued = {
                         id: uuidv1(),
                         text: call.request.text,
                         receiver: call.request.receiver,
                         token: "",
                         date: Date.now(),
                         state: 0,
-                        sender: call.request.sender,
-                        code: 1000
+                        sender: { id: connectedUser.id, nickName: connectedUser.name },
+                        code: 1000,
+                        phone: ""
                     };
                     connectedUser.cback.write(messageQueued);
+                    messageQueued.phone = registeredUser.login;
                     messageQueued.state = 1;
                     queueMessages.push(messageQueued);
                 }
@@ -135,7 +175,7 @@ class Messages {
                     global.connectedUsers = global.connectedUsers.filter((n) => n.login !== streamRequest.login)
                 }
                 if (user.token === streamRequest.token) {
-                    global.connectedUsers.push({id: user.id, login: user.login, token: user.token, cback: call});
+                    global.connectedUsers.push({id: user.id, login: user.login, token: user.token, name: user.name, cback: call});
                     console.log(`User Connected: ${user.login} - ${user.id}`);
                     login = user.login;
                     token = user.token;
