@@ -7,6 +7,7 @@ service UserService {
     rpc getUserByName (Name) returns (User) {}
     rpc getUserByID (ID) returns (User) {}
     rpc getKnownRegisteredUsersByPhones (Phones) returns (Users) {}
+    rpc getKnownRegisteredUsersByIds (IDs) returns (Users) {}
     rpc setUserName (Name) returns (Empty) {}
 }
 
@@ -39,5 +40,10 @@ message Users {
 
 message Phones {
     repeated string phones = 1;
+    string token = 2;
+}
+
+message IDs {
+    repeated string ids = 1;
     string token = 2;
 }

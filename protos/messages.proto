@@ -24,7 +24,7 @@ message Message {
     string text = 2;
     Receiver receiver = 3;
     string token = 4;
-    int32 date = 5;
+    int64 date = 5;
     MessageState state = 6;
     Sender sender = 7;
     int32 code = 8;

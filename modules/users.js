@@ -27,6 +27,7 @@ class Users {
             getUserByName: this.getUserByName,
             getUserByID: this.getUserByID,
             getKnownRegisteredUsersByPhones: this.getKnownRegisteredUsersByPhones,
+            getKnownRegisteredUsersByIds: this.getKnownRegisteredUsersByIds,
             setUserName: this.setUserName
         });
     }
@@ -140,6 +141,28 @@ class Users {
                 let registeredUser = global.users.users.find((n) => n.login === phone);
                 if(registeredUser) {
                     let user = { id: registeredUser.id , name: registeredUser.name, phone: phone };
+                    users.push(user);
+                }
+            });
+            callback(null, { users: users });
+        } else {
+            callback({
+                code: grpc.status.UNAUTHENTICATED,
+                details: "Token check failed"
+            })
+        }
+    }
+
+    // MARK: -
+
+    getKnownRegisteredUsersByIds(call, callback) {
+        let connectedUser = global.connectedUsers.find((n) => n.token === call.request.token);
+        if(connectedUser) {
+            var users = [];
+            call.request.ids.forEach(function(id) {
+                let registeredUser = global.users.users.find((n) => n.id === id);
+                if(registeredUser) {
+                    let user = { id: registeredUser.id , name: registeredUser.name, phone: "" };
                     users.push(user);
                 }
             });
