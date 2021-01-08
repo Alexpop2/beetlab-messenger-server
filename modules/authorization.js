@@ -59,7 +59,7 @@ class Authorization {
                                     userId = user.id;
                                 } else {
                                     userId = uuidv1();
-                                    users.users.push({ id: userId, login: userData.phoneNumber, token: call.request.data });
+                                    users.users.push({ id: userId, login: userData.phoneNumber, token: call.request.data, name: userId });
                                 }
                                 var jsonUsers = JSON.stringify(users);
                                 fs.writeFileSync("data/users.json", jsonUsers, 'utf8');
